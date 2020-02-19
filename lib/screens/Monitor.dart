@@ -32,23 +32,25 @@ class _MonitorState extends State<Monitor> {
     });
   }
 
+  void deleteUrl (url) {
+    setState(() {
+      int index = urls.indexOf(url);
+      urls.removeAt(index);
+    });
+  }
+
   List<Widget> _buildCards(List<String> urls) {
-    List<Widget> data = [];
-    for (int i = 0; i < urls.length; i++) {
-      data.add(
-        Dismissible(
-          movementDuration: Duration(milliseconds: 100),
-          key: UniqueKey(),
-          onDismissed: (direction) {
-            setState(() {
-              urls.removeAt(i);
-            });
-          },
-          child: CardMonitor(color: Colors.pink, name: urls[i],),
-        )
+
+    return urls.map((String url) {
+      return Dismissible(
+        movementDuration: Duration(milliseconds: 10),
+        key: UniqueKey(),
+        onDismissed: (direction) {
+          deleteUrl(url);
+        },
+        child: CardMonitor(color: Colors.pink, name: url),
       );
-    }
-    return data;
+    }).toList();
   }
 
   @override
@@ -56,7 +58,7 @@ class _MonitorState extends State<Monitor> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Monitor',
+          'Post-it',
           style: TextStyle(
             fontWeight: FontWeight.bold,
           ),
@@ -73,9 +75,6 @@ class _MonitorState extends State<Monitor> {
       body: Column(
         children: <Widget>[
           handleForm(formVisible),
-          // Column(
-          //   children: _buildCards(urls),
-          // )
           Expanded(
             child: GridView.count(
               shrinkWrap: true,
@@ -88,7 +87,6 @@ class _MonitorState extends State<Monitor> {
             ),
           )
         ],
-
       ),
     );
   }

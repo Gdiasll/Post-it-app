@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import '../components/CardMonitor.dart';
 import '../components/Formulary.dart';
@@ -10,20 +12,26 @@ class Monitor extends StatefulWidget {
 
 class _MonitorState extends State<Monitor> {
 
-  List<String> urls = [];
+  List<Color> colors = [Colors.pink, Colors.pinkAccent, Colors.red, Colors.yellow, Colors.blue, Colors.green, Colors.lightBlue];
+  Map<String, Color> cards = {};
   bool formVisible = false;
-
-  void formularyCallback (String url) {
-    setState(() {
-      urls.add(url);
-    });
-    formVisible = !formVisible;
-  }
 
   Widget handleForm (formVisible) {
     return formVisible ? 
       Formulary(callBack: this.formularyCallback,) :
       Padding(padding: EdgeInsets.all(10.0),);
+  }
+
+  Color get color {
+    var random = new Random();
+    return colors[random.nextInt(colors.length)];
+  }
+
+  void formularyCallback (String url) {
+    setState(() {
+      cards[url] = color;
+    });
+    formVisible = !formVisible;
   }
 
   void togleForm () {
@@ -32,25 +40,25 @@ class _MonitorState extends State<Monitor> {
     });
   }
 
-  void deleteUrl (url) {
+  void deleteUrl (texto) {
     setState(() {
-      int index = urls.indexOf(url);
-      urls.removeAt(index);
+      cards.remove(texto);
     });
   }
 
-  List<Widget> _buildCards(List<String> urls) {
-
-    return urls.map((String url) {
-      return Dismissible(
+  List<Widget> _buildCards(Map<String, Color> cards) {
+    List<Widget> payload = [];
+    cards.forEach((String texto, Color cor) {
+      payload.add(Dismissible(
         movementDuration: Duration(milliseconds: 10),
         key: UniqueKey(),
         onDismissed: (direction) {
-          deleteUrl(url);
+          deleteUrl(texto);
         },
-        child: CardMonitor(color: Colors.pink, name: url),
-      );
-    }).toList();
+        child: CardMonitor(color: cor, name: texto),
+      ));
+    });
+    return payload;
   }
 
   @override
@@ -83,7 +91,7 @@ class _MonitorState extends State<Monitor> {
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               crossAxisCount: 2, 
-              children: _buildCards(urls),
+              children: _buildCards(cards),
             ),
           )
         ],

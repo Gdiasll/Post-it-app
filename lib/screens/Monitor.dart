@@ -1,64 +1,84 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import '../components/CardMonitor.dart';
 import '../components/Formulary.dart';
+import '../models/cards.dart';
 
 class Monitor extends StatefulWidget {
-
   @override
   _MonitorState createState() => _MonitorState();
 }
 
 class _MonitorState extends State<Monitor> {
-
-  List<Color> colors = [Colors.pink, Colors.pinkAccent, Colors.red, Colors.yellow, Colors.blue, Colors.green, Colors.lightBlue];
-  Map<String, Color> cards = {};
+  CardModel cardModel = new CardModel();
+  List<dynamic> colors = [
+    0xFFF48FB1,
+    0xFFF06292,
+    0xFFE57373,
+    0xFFFFF176,
+    0xFF81C784,
+    0xFF64B5F6,
+  ];
+  Map<String, int> cards = {};
   bool formVisible = false;
 
-  Widget handleForm (formVisible) {
-    return formVisible ? 
-      Formulary(callBack: this.formularyCallback,) :
-      Padding(padding: EdgeInsets.all(10.0),);
+  Widget handleForm(formVisible) {
+    return formVisible
+        ? Formulary(
+            callBack: this.formularyCallback,
+          )
+        : Padding(
+            padding: EdgeInsets.all(10.0),
+          );
   }
 
-  Color get color {
+  int get color {
     var random = new Random();
     return colors[random.nextInt(colors.length)];
   }
 
-  void formularyCallback (String url) {
-    setState(() {
-      cards[url] = color;
-    });
+  void formularyCallback(String nome) {
+    int colorCard = color;
+    cardModel.setCard({nome: colorCard}).then((param) => this.updateCards());
     formVisible = !formVisible;
   }
 
-  void togleForm () {
+  void togleForm() {
     setState(() {
       formVisible = !formVisible;
     });
   }
 
-  void deleteUrl (texto) {
-    setState(() {
-      cards.remove(texto);
+  void deleteCard(key) {
+    cardModel.deletCard(key).then((param) => this.updateCards());
+  }
+
+  void updateCards() {
+    cardModel.getCards().then((dataCards) {
+      setState(() {
+        cards = new Map<String, int>.from(dataCards);
+      });
     });
   }
 
-  List<Widget> _buildCards(Map<String, Color> cards) {
+  List<Widget> _buildCards(Map<String, int> cards) {
     List<Widget> payload = [];
-    cards.forEach((String texto, Color cor) {
+    cards.forEach((String texto, int cor) {
       payload.add(Dismissible(
         movementDuration: Duration(milliseconds: 10),
         key: UniqueKey(),
         onDismissed: (direction) {
-          deleteUrl(texto);
+          deleteCard(texto);
         },
-        child: CardMonitor(color: cor, name: texto),
+        child: CardMonitor(color: Color(cor) , name: texto),
       ));
     });
     return payload;
+  }
+
+  @override
+  void initState() {
+    updateCards();
   }
 
   @override
@@ -90,7 +110,7 @@ class _MonitorState extends State<Monitor> {
               padding: const EdgeInsets.all(20),
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
-              crossAxisCount: 2, 
+              crossAxisCount: 2,
               children: _buildCards(cards),
             ),
           )

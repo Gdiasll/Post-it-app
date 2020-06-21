@@ -1,2 +1,3 @@
 # monitor
-Monitor para sites/api's/servidores
+Aplicativo mobile para criar post-its
+
